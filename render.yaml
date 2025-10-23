@@ -2,10 +2,19 @@ services:
   - type: web
     name: note-app
     env: node
-    buildCommand: npm install && npm run build
+    buildCommand: |
+      npm install
+      npm run build
     startCommand: npm start
     envVars:
       - key: NODE_ENV
         value: production
       - key: PORT
         value: 10000
+    plan: free
+    autoDeploy: true
+    region: oregon
+    healthCheckPath: /
+    envVars:
+      - key: NODE_VERSION
+        value: 20.x
