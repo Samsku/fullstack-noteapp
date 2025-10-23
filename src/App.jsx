@@ -10,7 +10,7 @@ const Notification = ({ message, isError = true }) => {
 
 const App = () => {
     const [notes, setNotes] = useState([]);
-    const [newNote, setNewNote] = useState("a new note");
+    const [newNote, setNewNote] = useState('a new note');
     const [showAll, setShowAll] = useState(true);
     const [errorMessage, setErrorMessage] = useState(null);
 
@@ -18,15 +18,20 @@ const App = () => {
         noteService
             .getAll()
             .then(initialNotes => {
-                setNotes(initialNotes);
+                if (Array.isArray(initialNotes)) {
+                    setNotes(initialNotes);
+                } else {
+                    console.error('Unexpected response format:', initialNotes);
+                    setErrorMessage('Failed to load notes. Invalid data format.');
+                }
             })
             .catch(error => {
                 console.error('Failed to fetch notes:', error);
                 setErrorMessage('Failed to load notes. Please try again later.');
             });
-    }, [])
+    }, []);
 
-    const addNote = (e) => {
+    const addNote = e => {
         e.preventDefault();
         if (!newNote.trim()) {
             setErrorMessage('Note content cannot be empty');
@@ -41,7 +46,7 @@ const App = () => {
         noteService
             .create(noteObject)
             .then(returnedNote => {
-                setNotes(notes.concat(returnedNote));
+                setNotes(prevNotes => [...prevNotes, returnedNote]);
                 setNewNote('');
                 setErrorMessage('Note created successfully!');
                 setTimeout(() => setErrorMessage(null), 3000);
@@ -50,57 +55,62 @@ const App = () => {
                 console.error('Error creating note:', error);
                 setErrorMessage('Failed to create note. Please try again.');
             });
-    }
+    };
 
-    const handleNoteChange = (e) => {
+    const handleNoteChange = e => {
         setNewNote(e.target.value);
-        // Clear any error when user starts typing
         if (errorMessage) setErrorMessage(null);
-    }
+    };
 
-    const notesToShow = showAll ? notes : notes.filter(note => note.important);
+    const notesToShow = Array.isArray(notes)
+        ? showAll
+            ? notes
+            : notes.filter(note => note.important)
+        : [];
 
-    const toggleImportanceOf = (id) => {
+    const toggleImportanceOf = id => {
         const note = notes.find(note => note.id === id);
         if (!note) {
             setErrorMessage('Note not found');
             return;
         }
-        
+
         const changedNote = { ...note, important: !note.important };
 
         noteService
             .update(id, changedNote)
             .then(returnedNote => {
-                setNotes(notes.map(note => (note.id === id ? returnedNote : note)));
-                setErrorMessage(`Note marked as ${returnedNote.important ? 'important' : 'not important'}`);
+                setNotes(notes.map(n => (n.id === id ? returnedNote : n)));
+                setErrorMessage(
+                    `Note marked as ${returnedNote.important ? 'important' : 'not important'}`
+                );
                 setTimeout(() => setErrorMessage(null), 3000);
             })
             .catch(error => {
                 console.error('Error updating note:', error);
                 setErrorMessage('Failed to update note. Please try again.');
             });
-    }
-
-    if (!notes) {
-        return <div>Loading notes...</div>;
-    }
+    };
 
     return (
         <div>
             <h1>Notes</h1>
-            <Notification 
-                message={errorMessage} 
-                isError={!errorMessage || !errorMessage.includes('success')} 
+            <Notification
+                message={errorMessage}
+                isError={!errorMessage || !errorMessage.includes('success')}
             />
             <div>
                 <button onClick={() => setShowAll(!showAll)}>
-                    Show {showAll ? "important" : "all"}
+                    Show {showAll ? 'important' : 'all'}
                 </button>
             </div>
             <ul>
-                {notesToShow.map((note) => (
-                    <Note key={note.id} note={note} toggleImportance={() => toggleImportanceOf(note.id)} />
+                {notesToShow.map(note => (
+                    <Note
+                        key={note.id}
+                        note={note}
+                        toggleImportance={() => toggleImportanceOf(note.id)}
+                    />
                 ))}
             </ul>
             <form onSubmit={addNote}>
@@ -109,7 +119,7 @@ const App = () => {
             </form>
             <Footer />
         </div>
-    )
-}
+    );
+};
 
-export default App
+export default App;
