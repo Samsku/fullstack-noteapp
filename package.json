@@ -7,7 +7,7 @@
     "start": "node index.js",
     "dev": "vite",
     "build": "vite build",
-    "build:ui": "rmdir /s /q backend/dist && npm run build && xcopy dist backend\\dist /E /I /Y",
+    "build:ui": "rm -rf backend/dist && npm run build && cp -r dist backend/dist",
     "deploy:full": "npm run build:ui && git add . && git commit -m \"uibuild\" && git push",
     "lint": "eslint .",
     "preview": "vite preview",
