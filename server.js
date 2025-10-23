@@ -4,6 +4,7 @@ import { fileURLToPath } from 'url';
 import cors from 'cors';
 import helmet from 'helmet';
 
+
 // Get the current file and directory paths in ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -28,6 +29,16 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 app.use(express.json());
+
+// CSP Middleware: allow connections to localhost:3001
+app.use((req, res, next) => {
+    res.setHeader(
+        "Content-Security-Policy",
+        "default-src 'self'; connect-src 'self' http://localhost:3001"
+    );
+    next();
+});
+
 
 // API Routes
 let notes = [
