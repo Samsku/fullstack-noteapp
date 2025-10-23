@@ -42,7 +42,7 @@ app.put('/api/notes/:id', (req, res) => {
 // Serve React build
 app.use(express.static(path.join(__dirname, 'dist')));
 
-// Fallback: serve index.html for all non-API GET requests
+// Fallback for React Router — serve index.html for non-API GET requests
 app.use((req, res, next) => {
     if (req.method === 'GET' && !req.path.startsWith('/api')) {
         res.sendFile(path.join(__dirname, 'dist', 'index.html'));
@@ -50,13 +50,6 @@ app.use((req, res, next) => {
         next();
     }
 });
-
-app.use((req, res, next) => {
-    if (req.method === 'GET' && !req.path.startsWith('/api')) {
-        res.sendFile(path.join(__dirname, 'dist', 'index.html'));
-    } else next();
-});
-
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
