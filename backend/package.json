@@ -6,7 +6,9 @@
   "scripts": {
     "start": "node index.js",
     "dev": "node --watch index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build:ui": "rimraf dist && npm run build --prefix .. && xcopy /E /I ..\\dist .\\dist",
+    "deploy:full": "npm run build:ui && git add . && git commit -m uibuild && git push"
   },
   "keywords": [
     "note-app",
@@ -15,7 +17,6 @@
   "author": "Samsku",
   "license": "ISC",
   "dependencies": {
-    "cors": "^2.8.5",
     "express": "^5.1.0"
   }
 }
