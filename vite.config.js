@@ -1,39 +1,22 @@
-import { defineConfig, loadEnv } from 'vite';
+import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
-export default defineConfig(({ mode }) => {
-  // Load env file based on `mode` in the current working directory
-  const env = loadEnv(mode, process.cwd(), '');
-
-  return {
-    plugins: [react()],
+export default defineConfig({
+    plugins: [
+        react({
+            // Enable Fast Refresh
+            jsxRuntime: 'automatic', // Enables the new JSX transform
+            babel: {
+                plugins: ['@babel/plugin-transform-react-jsx'], // Ensure JSX transform is enabled
+            },
+        }),
+    ],
     server: {
-      proxy: {
-        '/api': {
-          target: 'http://localhost:3001',
-          changeOrigin: true,
-        },
-      },
+        port: 3000, // Match your frontend port
+        open: true,
     },
-    // Production build settings
     build: {
-      outDir: 'dist',
-      assetsDir: 'assets',
-      sourcemap: true,
-      // Ensure proper chunking for production
-      rollupOptions: {
-        output: {
-          manualChunks: {
-            react: ['react', 'react-dom'],
-          },
-        },
-      },
+        outDir: 'dist', // Output directory for the production build
+        sourcemap: true, // Enable source maps for debugging
     },
-    // Base public path when served in production
-    base: './',
-    // Environment variables available in the client
-    define: {
-      'process.env.NODE_ENV': JSON.stringify(env.NODE_ENV || 'production'),
-    },
-  };
 });
