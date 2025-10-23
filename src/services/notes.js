@@ -1,7 +1,18 @@
 import axios from 'axios'
-import { API_BASE_URL } from '../config'
+const baseUrl = 'http://localhost:3001/api/notes'
 
-const baseUrl = `${API_BASE_URL}/api/notes`
+const toggleImportance = (id) => {
+    return axios.get(`${baseUrl}/${id}`)
+        .then(res => {
+            const note = res.data;
+            const changedNote = { ...note, important: !note.important };
+            return axios.put(`${baseUrl}/${id}`, changedNote).then(res => res.data);
+        })
+        .catch(error => {
+            console.error(`Error toggling importance for note ${id}:`, error);
+            throw error;
+        });
+};
 
 const getAll = () => {
     return axios.get(baseUrl)
@@ -33,5 +44,6 @@ const update = (id, newObject) => {
 export default {
     getAll,
     create,
-    update
+    update,
+    toggleImportance
 }

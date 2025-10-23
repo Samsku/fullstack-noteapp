@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Note from './components/Note';
 import Footer from './components/Footer';
 import noteService from './services/notes';
+import './index.css';
 
 const Notification = ({ message, isError = true }) => {
     if (!message) return null;
@@ -62,11 +63,9 @@ const App = () => {
         if (errorMessage) setErrorMessage(null);
     };
 
-    const notesToShow = Array.isArray(notes)
-        ? showAll
-            ? notes
-            : notes.filter(note => note.important)
-        : [];
+    const notesToShow = showAll
+        ? notes
+        : notes.filter(note => note.important);
 
     const toggleImportanceOf = id => {
         const note = notes.find(note => note.id === id);
@@ -78,7 +77,7 @@ const App = () => {
         const changedNote = { ...note, important: !note.important };
 
         noteService
-            .update(id, changedNote)
+            .toggleImportance(id, changedNote)
             .then(returnedNote => {
                 setNotes(notes.map(n => (n.id === id ? returnedNote : n)));
                 setErrorMessage(
