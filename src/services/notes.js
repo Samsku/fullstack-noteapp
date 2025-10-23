@@ -1,5 +1,7 @@
 import axios from 'axios'
-const baseUrl = '/api/notes'
+import { API_BASE_URL } from '../config'
+
+const baseUrl = `${API_BASE_URL}/api/notes`
 
 const getAll = () => {
     return axios.get(baseUrl)
