@@ -32,6 +32,8 @@ app.delete('/api/notes/:id', (req, res) => {
     notes = notes.filter(n => n.id !== req.params.id);
     res.status(204).end();
 });
+
+// API update route
 app.put('/api/notes/:id', (req, res) => {
     const index = notes.findIndex(n => n.id === req.params.id);
     if (index === -1) return res.status(404).json({ error: 'Note not found' });
