@@ -50,7 +50,7 @@ app.put('/api/notes/:id', (req, res) => {
 });
 
 // Fallback for React Router — serve index.html for all frontend routes
-app.get('*', (req, res) => {
+app.get('/*', (req, res) => {
     res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
