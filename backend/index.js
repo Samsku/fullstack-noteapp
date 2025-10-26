@@ -2,6 +2,8 @@
 import express from "express";
 import path from "path";
 import { fileURLToPath } from "url";
+import Note from "./models/note.js";
+
 
 // Directory and filename
 const __filename = fileURLToPath(import.meta.url);
@@ -19,36 +21,61 @@ let notes = [
 ];
 
 // Get all notes
-app.get('/api/notes', (req, res) => res.json(notes));
+app.get('/api/notes', (req, res) => {
+    Note.find({}).then(notes => {
+        res.json(notes);
+    })
+});
 
 // Note by id
-app.get('/api/notes/:id', (req, res) => {
-    const note = notes.find(n => n.id === req.params.id);
-    note ? res.json(note) : res.status(404).end();
+app.get('/api/notes/:id', (req, res, next) => {
+    Note.findById(req.params.id).then(note => {
+        if (note) {
+            res.json(note);
+        } else {
+            res.status(404).end();
+        }
+    })
+        .catch(error => next(error))
 });
 
 // Create new note
 app.post('/api/notes', (req, res) => {
     const body = req.body;
-    if (!body.content) return res.status(400).json({ error: 'content missing' });
-    const id = String(notes.length > 0 ? Math.max(...notes.map(n => Number(n.id))) + 1 : 1);
-    const note = { content: body.content, important: body.important || false, id };
-    notes = notes.concat(note);
-    res.json(note);
+
+    const note = new Note({
+        content: body.content,
+        important: body.important || false,
+    })
+    note.save().then(savedNote => {
+        res.json(savedNote);
+    })
+        .catch(error => next(error))
 });
 
 // Delete note
-app.delete('/api/notes/:id', (req, res) => {
-    notes = notes.filter(n => n.id !== req.params.id);
-    res.status(204).end();
+app.delete('/api/notes/:id', (req, res, next) => {
+    Note.findByIdAndDelete(req.params.id).then(result => {
+        res.status(204).end();
+    })
+        .catch(error => next(error))
 });
 
 // API update route
-app.put('/api/notes/:id', (req, res) => {
-    const index = notes.findIndex(n => n.id === req.params.id);
-    if (index === -1) return res.status(404).json({ error: 'Note not found' });
-    notes[index] = { ...notes[index], content: req.body.content, important: req.body.important };
-    res.json(notes[index]);
+app.put('/api/notes/:id', (req, res, next) => {
+    const { content, important } = req.body;
+
+    Note.findById(req.params.id).then(note => {
+        if (!note) return res.status(404).end();
+
+        note.content = content;
+        note.important = important;
+
+        return note.save().then(updatedNote => {
+            res.json(updatedNote);
+        })
+    })
+        .catch(error => next(error))
 });
 
 // Serve React build
@@ -62,6 +89,19 @@ app.use((req, res, next) => {
         next();
     }
 });
+
+// Error handler
+const errorHandler = (error, req, res, next) => {
+    console.error(error.message);
+    if (error.name === "CastError") {
+        return res.status(400).send({error: "Malformed id"});
+    } else if (error.name === "ValidationError") {
+        return res.status(400).send({error: error.message});
+    }
+    next(error);
+}
+app.use(errorHandler);
+
 
 // Port
 const PORT = process.env.PORT || 3001;
