@@ -40,8 +40,7 @@ app.get('/api/notes/:id', (req, res, next) => {
 });
 
 // Create new note
-app.post('/api/notes', (req, res) => {
-    const body = req.body;
+app.post('/api/notes', (req, res, next) => {    const body = req.body;
 
     const note = new Note({
         content: body.content,
@@ -55,7 +54,7 @@ app.post('/api/notes', (req, res) => {
 
 // Delete note
 app.delete('/api/notes/:id', (req, res, next) => {
-    Note.findByIdAndDelete(req.params.id).then(result => {
+    Note.findByIdAndDelete(req.params.id).then(() => {
         res.status(204).end();
     })
         .catch(error => next(error))
